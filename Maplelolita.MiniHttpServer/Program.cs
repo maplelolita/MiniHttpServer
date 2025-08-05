@@ -1,7 +1,4 @@
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.AspNetCore.StaticFiles.Infrastructure;
-using Microsoft.Extensions.FileProviders;
 
 namespace Maplelolita.MiniHttpServer
 {
