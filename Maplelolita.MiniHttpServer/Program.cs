@@ -1,3 +1,4 @@
+using Maplelolita.MiniHttpServer.Middlewares;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Maplelolita.MiniHttpServer
@@ -8,11 +9,30 @@ namespace Maplelolita.MiniHttpServer
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDirectoryBrowser();
+            var allowDirectoryBrowser = builder.Configuration.GetSection("UseDirectoryBrowser").Get<bool>();
+            var usePathFilter = builder.Configuration.GetSection("UsePathFilter").Get<bool>();
+
+            if (allowDirectoryBrowser)
+            {
+                builder.Services.AddDirectoryBrowser();
+            }
+
+            builder.Services.AddWindowsService(opt =>
+            {
+                opt.ServiceName = "Mini HTTP Server";
+            });
 
             var app = builder.Build();
 
-            app.UseDirectoryBrowser();
+            if (usePathFilter)
+            {
+                app.UseMiddleware<SensitivePathFilterMiddleware>();
+            }
+
+            if (allowDirectoryBrowser)
+            {
+                app.UseDirectoryBrowser();
+            }
 
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -20,6 +40,8 @@ namespace Maplelolita.MiniHttpServer
                 DefaultContentType = "application/octet-stream",
                 HttpsCompression = HttpsCompressionMode.DoNotCompress,
             });
+
+            app.UseMiddleware<NotFoundFallbackMiddleware>();
 
             app.Run();
         }
